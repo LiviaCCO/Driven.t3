@@ -1,65 +1,38 @@
 import { Hotel } from '@prisma/client';
-import { notFoundError } from '@/errors';
-import { hotelsRepository } from '@/repositories/hotels-repository';
+import { notFoundError, badRequestError, paymentRequiredError } from '@/errors';
+import hotelsRepository  from '@/repositories/hotels-repository';
+import ticketService from '../tickets-service';
 import { CreateTicketParams } from '@/protocols';
 
-async function getHotels(): Promise<Hotel[]> {
-  const hotels: Hotel[] = await hotelsRepository.findHotels();
-  if (!hotels) throw notFoundError();
+async function getHotels(userId: number): Promise<Hotel[]> {
+    const ticket = await ticketService.getTicketByUserId(userId: number)
+    if (!ticket || !ticket.enrollmentId) throw notFoundError(); //404
+    //- Não existe (inscrição, ticket ou hotel): `404 (not found)`
+    //- Ticket não foi pago, é remoto ou não inclui hotel: `402 (payment required)`
+    if (ticket.status !== "PAID" || ticket.TicketType.isRemote !== false || ticket.TicketType.includesHotel !== true) throw paymentRequiredError(); //402
+   
+    //- Outros erros: `400 (bad request)`
+    const hotels: Hotel[] = await hotelsRepository.findHotels();
+    if (!hotels) throw notFoundError();
 
-  const rooms = await hotelsRepository.findRooms();
-  if (!rooms) throw notFoundError();
-
-  let hotelsTable = {};
-  for (let i=0; i < hotels.length; i++){
-    hotelsTable += {
-        id: .id,
-        name: .name,
-        image: .image,
-        createdAt: .createdAt.toISOString(),
-        updatedAt: .updatedAt.toISOString(),
-        Rooms: [
-          {
-            id: .Rooms[0].id,
-            name: Rooms[0].name,
-            capacity: .Rooms[0].capacity,
-            hotelId: .Rooms[0].hotelId,
-            createdAt: .Rooms[0].createdAt.toISOString(),
-            updatedAt: .Rooms[0].updatedAt.toISOString(),
-        }]
-    }
-  }
-  return hotels;
+    const rooms = await hotelsRepository.findRooms();
+  
+    return hotels;
 }
 
-async function getHotelId(hotelId: number): Promise<Hotel> {
-  const hotel = await hotelsRepository.findHotelId(hotelId);
-  if (!hotel) throw notFoundError();
+async function getHotelId(userId: number, hotelId: number) {
+    const ticket = await ticketService.getTicketByUserId(userId: number)
+    if (!ticket || !ticket.enrollmentId) throw notFoundError(); //404
+    //- Não existe (inscrição, ticket ou hotel): `404 (not found)`
+    //- Ticket não foi pago, é remoto ou não inclui hotel: `402 (payment required)`
+    if (ticket.status !== "PAID" || ticket.TicketType.isRemote !== false || ticket.TicketType.includesHotel !== true) throw paymentRequiredError(); //402
+   
+    //- Outros erros: `400 (bad request)`
+    const hotel = await hotelsRepository.findHotelId(hotelId);
+    if (!hotel) throw notFoundError();
 
-  const rooms = await hotelsRepository.findRoomsId(hotelId);
-  if (!rooms) throw notFoundError();
-
-  return rooms;
+    return hotel;
 }
-
-/* //retorno de Rooms com Hotel (include Rooms em Hotel)
-{
-  id: hotelWithRooms.id,
-  name: hotelWithRooms.name,
-  image: hotelWithRooms.image,
-  createdAt: hotelWithRooms.createdAt.toISOString(),
-  updatedAt: hotelWithRooms.updatedAt.toISOString(),
-  Rooms: [
-    {
-      id: hotelWithRooms.Rooms[0].id,
-      name: hotelWithRooms.Rooms[0].name,
-      capacity: hotelWithRooms.Rooms[0].capacity,
-      hotelId: hotelWithRooms.Rooms[0].hotelId,
-      createdAt: hotelWithRooms.Rooms[0].createdAt.toISOString(),
-      updatedAt: hotelWithRooms.Rooms[0].updatedAt.toISOString(),
-    }
-  ]
-} */
 
 const hotelsService = {
     getHotels,
