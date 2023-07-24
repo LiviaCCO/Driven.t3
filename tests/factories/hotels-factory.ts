@@ -10,12 +10,12 @@ export async function createHotels() {
   });
 }
 
-export async function createRoom(enrollmentId: number, ticketTypeId: number, status: TicketStatus) {
+export async function createRoom(hotelId: number) {
   return prisma.room.create({
     data: {
-        name: faker.name.findName(),
-        capacity: faker.datatype.number(),
-        hotelId: faker.datatype.number(),
+        name: 'Hotel Driven',
+        capacity: 100,
+        hotelId: hotelId,
     },
   });
 }
