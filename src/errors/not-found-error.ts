@@ -7,7 +7,7 @@ export function notFoundError(): ApplicationError {
   };
 }
 
-export function badRequestError(): ApplicationError {
+/* export function badRequestError(): ApplicationError {
   return {
     name: 'Bad request',
     message: 'xxxxxxx!',
@@ -19,4 +19,4 @@ export function paymentRequiredError(): ApplicationError {
     name: 'Payment Required',
     message: 'xxxxxxx!',
   };
-}
+} */

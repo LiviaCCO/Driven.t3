@@ -1,6 +1,6 @@
 import { RequestError } from '@/protocols';
 
-export function requestError(status: number, statusText: string): RequestError {
+export function requestError(status: number, statusText?: string): RequestError {
   return {
     name: 'RequestError',
     data: null,
