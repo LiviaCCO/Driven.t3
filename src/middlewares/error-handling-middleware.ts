@@ -3,11 +3,16 @@ import httpStatus from 'http-status';
 import { ApplicationError } from '@/protocols';
 
 export function handleApplicationErrors(
-  err: ApplicationError | Error,
+  err: ApplicationError | Error, 
   _req: Request,
   res: Response,
   _next: NextFunction,
 ) {
+  if (err.name === 'PaymentRequiredError') {
+    return res.status(httpStatus.PAYMENT_REQUIRED).send({
+      message: err.message,
+    });
+  }
   if (err.name === 'CannotEnrollBeforeStartDateError') {
     return res.status(httpStatus.BAD_REQUEST).send({
       message: err.message,

@@ -34,7 +34,6 @@ describe('GET /hotels', () => {
     const userWithoutSession = await createUser();
     const token = jwt.sign({ userId: userWithoutSession.id }, process.env.JWT_SECRET);
     const response = await server.get('/hotels').set('Authorization', `Bearer ${token}`);
-
     expect(response.status).toBe(httpStatus.UNAUTHORIZED);
   });
 
@@ -49,12 +48,10 @@ describe('GET /hotels', () => {
       await createPayment(ticket.id, ticketType.price);
       const token = await generateValidToken(user);
 
-      const hotels = await createHotels();
-      console.log(hotels);
       const response = await server.get('/hotels').set('Authorization', `Bearer ${token}`);
-      console.log(response.body)
+      console.log(response.body);
       expect(response.status).toBe(httpStatus.OK);
-      expect(response.body).toEqual({});
+      expect(response.body).toEqual([]);
     });
     
     // Dando tudo certo com hoteis
@@ -66,9 +63,8 @@ describe('GET /hotels', () => {
       const ticket = await createTicket(enrollment.id, ticketType.id, TicketStatus.PAID);
       await createPayment(ticket.id, ticketType.price);
       const token = await generateValidToken(user);
-      console.log(ticket)
       const hotels = await createHotels();
-      console.log(hotels)
+      console.log("hoteis",hotels)
       const response = await server.get('/hotels').set('Authorization', `Bearer ${token}`);
       console.log(response.body)
       expect(response.status).toBe(httpStatus.OK);
@@ -90,7 +86,6 @@ describe('GET /hotels', () => {
       const ticketType = await createSpecificTicketType(true, true)
       const ticket = await createTicket(enrollment.id, ticketType.id, TicketStatus.PAID);
       await createPayment(ticket.id, ticketType.price);
-      console.log(ticket);
       const token = await generateValidToken(user);
       const response = await server.get('/hotels').set('Authorization', `Bearer ${token}`);
       expect(response.status).toEqual(httpStatus.PAYMENT_REQUIRED);
@@ -190,7 +185,6 @@ describe('GET /hotelId', () => {
       const token = await generateValidToken();
       const hotels = await createHotels();
       const response = await server.get(`/hotels/${hotels.id}`).set('Authorization', `Bearer ${token}`);
-
       expect(response.status).toBe(httpStatus.OK);
       expect(response.body).toEqual(
         {
@@ -301,4 +295,4 @@ describe('GET /hotelId', () => {
     
   });
 });
-
+ 
