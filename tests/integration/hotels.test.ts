@@ -5,7 +5,6 @@ import * as jwt from 'jsonwebtoken';
 import supertest from 'supertest';
 import { createEnrollmentWithAddress, createUser, createTicketType, createTicket, createHotels, createPayment, createSpecificTicketType, createRoom } from '../factories';
 import { cleanDb, generateValidToken } from '../helpers';
-import { prisma } from '@/config';
 import app, { init } from '@/app';
 
 beforeAll(async () => {
@@ -43,13 +42,13 @@ describe('GET /hotels', () => {
       //exigências
       const user = await createUser(); 
       const enrollment = await createEnrollmentWithAddress(user);
-      const ticketType = await createTicketType();
+      const ticketType = await createSpecificTicketType(false, true);
       const ticket = await createTicket(enrollment.id, ticketType.id, TicketStatus.PAID);
       await createPayment(ticket.id, ticketType.price);
       const token = await generateValidToken(user);
 
       const response = await server.get('/hotels').set('Authorization', `Bearer ${token}`);
-      console.log(response.body);
+      //console.log(response.body);
       expect(response.status).toBe(httpStatus.OK);
       expect(response.body).toEqual([]);
     });
@@ -59,14 +58,14 @@ describe('GET /hotels', () => {
       //exigências
       const user = await createUser(); 
       const enrollment = await createEnrollmentWithAddress(user);
-      const ticketType = await createTicketType();
+      const ticketType = await createSpecificTicketType(false, true);
       const ticket = await createTicket(enrollment.id, ticketType.id, TicketStatus.PAID);
       await createPayment(ticket.id, ticketType.price);
       const token = await generateValidToken(user);
       const hotels = await createHotels();
-      console.log("hoteis",hotels)
+      //console.log("hoteis",hotels)
       const response = await server.get('/hotels').set('Authorization', `Bearer ${token}`);
-      console.log(response.body)
+      //console.log(response.body)
       expect(response.status).toBe(httpStatus.OK);
       expect(response.body).toEqual([
         {
@@ -128,8 +127,8 @@ describe('GET /hotels', () => {
       expect(response.status).toEqual(httpStatus.NOT_FOUND);
     });
     
-    ////////////////////////////////////////////
-    /* // Não existe (ticket): `404 (not found)`
+
+    // Não existe (ticket): `404 (not found)`
     it('should respond with 404 if ticket doesnt exist', async () => {
       const user = await createUser();
       const token = await generateValidToken(user);
@@ -148,8 +147,7 @@ describe('GET /hotels', () => {
       const response = await server.get('/hotels').set('Authorization', `Bearer ${token}`);
 
       expect(response.status).toEqual(httpStatus.NOT_FOUND);
-    }); */
-    /////////////////////////////////////////////
+    }); 
   });
 });
 
@@ -171,7 +169,7 @@ describe('GET /hotelId', () => {
     const response = await server.get('/hotels/1').set('Authorization', `Bearer ${token}`);
 
     expect(response.status).toBe(httpStatus.UNAUTHORIZED);
-  });
+  }); 
 
   describe('when token is valid', () => {
     // Dando tudo certo sem quartos
@@ -179,10 +177,10 @@ describe('GET /hotelId', () => {
       //exigências
       const user = await createUser(); 
       const enrollment = await createEnrollmentWithAddress(user);
-      const ticketType = await createTicketType();
+      const ticketType = await createSpecificTicketType(false, true);
       const ticket = await createTicket(enrollment.id, ticketType.id, TicketStatus.PAID);
       await createPayment(ticket.id, ticketType.price);
-      const token = await generateValidToken();
+      const token = await generateValidToken(user);
       const hotels = await createHotels();
       const response = await server.get(`/hotels/${hotels.id}`).set('Authorization', `Bearer ${token}`);
       expect(response.status).toBe(httpStatus.OK);
@@ -202,10 +200,10 @@ describe('GET /hotelId', () => {
       //exigências
       const user = await createUser(); 
       const enrollment = await createEnrollmentWithAddress(user);
-      const ticketType = await createTicketType();
+      const ticketType = await createSpecificTicketType(false, true);
       const ticket = await createTicket(enrollment.id, ticketType.id, TicketStatus.PAID);
       await createPayment(ticket.id, ticketType.price);
-      const token = await generateValidToken();
+      const token = await generateValidToken(user);
       const hotels = await createHotels();
       const rooms = await createRoom(hotels.id);
       const response = await server.get(`/hotels/${hotels.id}`).set('Authorization', `Bearer ${token}`);
@@ -291,7 +289,7 @@ describe('GET /hotelId', () => {
       const response = await server.get('/hotels/00000000').set('Authorization', `Bearer ${token}`);
 
       expect(response.status).toEqual(httpStatus.NOT_FOUND);
-  });
+  }); 
     
   });
 });
